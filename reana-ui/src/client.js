@@ -31,6 +31,8 @@ export const GITLAB_WEBHOOK_URL = `${api}/api/gitlab/webhook`;
 export const WORKFLOWS_URL = (params) =>
   `${api}/api/workflows?verbose=true&${stringifyQueryParams(params)}`;
 export const WORKFLOW_LOGS_URL = (id) => `${api}/api/workflows/${id}/logs`;
+export const JOB_LOGS_URL = (wf_id, step) =>
+  `${api}/api/workflows/${wf_id}/job/${step}/logs`;
 export const WORKFLOW_SPECIFICATION_URL = (id) =>
   `${api}/api/workflows/${id}/specification`;
 export const WORKFLOW_RETENTION_RULES_URL = (id) =>
@@ -130,6 +132,10 @@ class Client {
 
   getWorkflowLogs(id) {
     return this._request(WORKFLOW_LOGS_URL(id));
+  }
+
+  getJobLogs(id, step) {
+    return this._request(JOB_LOGS_URL(id, step));
   }
 
   getWorkflowFiles(id, pagination, search) {

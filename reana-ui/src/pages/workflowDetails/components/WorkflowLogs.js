@@ -14,10 +14,10 @@ import findKey from "lodash/findKey";
 import { useDispatch, useSelector } from "react-redux";
 import { Icon, Dropdown, Label, Loader, Message } from "semantic-ui-react";
 
-import { fetchWorkflowLogs } from "~/actions";
+import { fetchWorkflowLogs, fetchJobLogs } from "~/actions";
 import { NON_FINISHED_STATUSES } from "~/config";
 import { statusMapping } from "~/util";
-import { getWorkflowLogs, loadingDetails } from "~/selectors";
+import { getWorkflowLogs, loadingDetails, getJobLogs } from "~/selectors";
 import { CodeSnippet, TooltipIfTruncated } from "~/components";
 
 import styles from "./WorkflowLogs.module.scss";
@@ -46,7 +46,7 @@ EngineLogs.propTypes = {
   workflowStatus: PropTypes.string.isRequired,
 };
 
-function JobLogs({ logs }) {
+function JobLogs({ logs, workflowId }) {
   function chooseLastStepID(logs) {
     const failedStepId = findKey(logs, (log) => log.status === "failed");
     if (failedStepId) return failedStepId;
@@ -61,13 +61,20 @@ function JobLogs({ logs }) {
   const lastStepID = chooseLastStepID(logs);
   const [selectedStep, setSelectedStep] = useState(lastStepID);
 
+  const entries = useSelector(getJobLogs(workflowId, selectedStep));
+  const dispatch = useDispatch();
+
   useEffect(() => {
     // Only update the shown step logs if there was no log displayed before
     // and there is one ready to be displayed now
+    if (selectedStep) {
+      const options = { refetch: true, showLoader: false };
+      dispatch(fetchJobLogs(workflowId, selectedStep, options));
+    }
     if (lastStepID && !selectedStep) {
       setSelectedStep(lastStepID);
     }
-  }, [logs, lastStepID, selectedStep]);
+  }, [logs, lastStepID, selectedStep, dispatch, entries, workflowId]);
 
   const steps = Object.entries(logs).map(([id, log]) => ({
     key: id,
@@ -80,7 +87,8 @@ function JobLogs({ logs }) {
     value: id,
   }));
 
-  const log = logs[selectedStep];
+  const log = logs[selectedStep]; // pull job logs here
+
   return (
     <>
       <section className={styles["step-info"]}>
@@ -130,7 +138,7 @@ function JobLogs({ logs }) {
       </section>
       {log && (
         <CodeSnippet dollarPrefix={false} classes={styles.logs}>
-          {log.logs}
+          {entries}
         </CodeSnippet>
       )}
     </>
@@ -139,6 +147,7 @@ function JobLogs({ logs }) {
 
 JobLogs.propTypes = {
   logs: PropTypes.object.isRequired,
+  workflowId: PropTypes.string.isRequired,
 };
 
 export default function WorkflowLogs({ workflow, engine = false }) {
@@ -157,7 +166,7 @@ export default function WorkflowLogs({ workflow, engine = false }) {
   ) : engine ? (
     <EngineLogs workflowStatus={workflow.status} logs={engineLogs} />
   ) : (
-    <JobLogs logs={jobLogs} />
+    <JobLogs logs={jobLogs} workflowId={workflow.id} />
   );
 }
 

@@ -15,6 +15,7 @@ import client, {
   USER_INFO_URL,
   USER_SIGNOUT_URL,
   WORKFLOW_LOGS_URL,
+  JOB_LOGS_URL,
   WORKFLOW_SPECIFICATION_URL,
   WORKFLOW_RETENTION_RULES_URL,
   WORKFLOW_FILES_URL,
@@ -34,6 +35,7 @@ import {
   getWorkflow,
   getWorkflowLogs,
   getWorkflowSpecification,
+  getJobLogs,
 } from "~/selectors";
 
 export const ERROR = "Error";
@@ -87,8 +89,11 @@ export const WORKFLOW_STOPPED = "Workflow stopped";
 export const OPEN_STOP_WORKFLOW_MODAL = "Open stop workflow modal";
 export const CLOSE_STOP_WORKFLOW_MODAL = "Close stop workflow modal";
 export const WORKFLOW_LIST_REFRESH = "Refresh workflow list";
+export const JOB_LOGS_FETCH = "Fetch job logs";
+export const JOB_LOGS_RECEIVED = "Job logs received";
 
 export function errorActionCreator(error, name) {
+  console.error(error);
   const { status, data } = error?.response;
   const { message } = data;
   return {
@@ -333,6 +338,37 @@ export function fetchWorkflowLogs(
       )
       .catch((err) => {
         dispatch(errorActionCreator(err, WORKFLOW_LOGS_URL(id)));
+      });
+  };
+}
+
+export function fetchJobLogs(
+  id,
+  step,
+  { refetch = false, showLoader = true } = {},
+) {
+  return async (dispatch, getStore) => {
+    const state = getStore();
+    console.log("step", step);
+    const logs = getJobLogs(id, step)(state);
+    // Only fetch if needed
+    if (!isEmpty(logs) && !refetch) {
+      return logs;
+    }
+    if (showLoader) {
+      dispatch({ type: JOB_LOGS_FETCH });
+    }
+    return await client
+      .getJobLogs(id, step)
+      .then((resp) =>
+        dispatch({
+          type: JOB_LOGS_RECEIVED,
+          id,
+          logs: resp.data.logs,
+        }),
+      )
+      .catch((err) => {
+        dispatch(errorActionCreator(err, JOB_LOGS_URL(id, step)));
       });
   };
 }

@@ -33,6 +33,8 @@ import {
   WORKFLOW_LIST_REFRESH,
   WORKFLOW_LOGS_FETCH,
   WORKFLOW_LOGS_RECEIVED,
+  JOB_LOGS_FETCH,
+  JOB_LOGS_RECEIVED,
   WORKFLOW_SPECIFICATION_FETCH,
   WORKFLOW_SPECIFICATION_RECEIVED,
   WORKFLOW_FILES_FETCH,
@@ -259,6 +261,17 @@ const workflows = (state = workflowsInitialState, action) => {
 
 const details = (state = detailsInitialState, action) => {
   switch (action.type) {
+    case JOB_LOGS_FETCH:
+      return { ...state, loadingDetails: true };
+    case JOB_LOGS_RECEIVED:
+      return {
+        ...state,
+        details: {
+          ...state.details,
+          [action.id]: { ...state.details[action.id], job_log: action.logs },
+        },
+        loadingDetails: false,
+      };
     case WORKFLOW_LOGS_FETCH:
       return { ...state, loadingDetails: true };
     case WORKFLOW_LOGS_RECEIVED:

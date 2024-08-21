@@ -61,20 +61,23 @@ function JobLogs({ logs, workflowId }) {
   const lastStepID = chooseLastStepID(logs);
   const [selectedStep, setSelectedStep] = useState(lastStepID);
 
-  const entries = useSelector(getJobLogs(workflowId, selectedStep));
-  const dispatch = useDispatch();
-
   useEffect(() => {
     // Only update the shown step logs if there was no log displayed before
     // and there is one ready to be displayed now
+    if (lastStepID && !selectedStep) {
+      setSelectedStep(lastStepID);
+    }
+  }, [logs, lastStepID, selectedStep]);
+
+  const entries = useSelector(getJobLogs(workflowId));
+  const dispatch = useDispatch();
+
+  useEffect(() => {
     if (selectedStep) {
       const options = { refetch: true, showLoader: false };
       dispatch(fetchJobLogs(workflowId, selectedStep, options));
     }
-    if (lastStepID && !selectedStep) {
-      setSelectedStep(lastStepID);
-    }
-  }, [logs, lastStepID, selectedStep, dispatch, entries, workflowId]);
+  }, [logs, selectedStep, dispatch, workflowId]);
 
   const steps = Object.entries(logs).map(([id, log]) => ({
     key: id,

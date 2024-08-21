@@ -349,8 +349,7 @@ export function fetchJobLogs(
 ) {
   return async (dispatch, getStore) => {
     const state = getStore();
-    console.log("step", step);
-    const logs = getJobLogs(id, step)(state);
+    const logs = getJobLogs(id)(state);
     // Only fetch if needed
     if (!isEmpty(logs) && !refetch) {
       return logs;

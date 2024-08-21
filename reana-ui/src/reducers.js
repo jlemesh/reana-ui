@@ -268,7 +268,10 @@ const details = (state = detailsInitialState, action) => {
         ...state,
         details: {
           ...state.details,
-          [action.id]: { ...state.details[action.id], job_log: action.logs },
+          [action.id]: {
+            ...state.details[action.id],
+            job_log: action.logs,
+          },
         },
         loadingDetails: false,
       };

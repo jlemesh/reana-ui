@@ -67,5 +67,5 @@ export const getWorkflowParameters = (id) => (state) =>
   id in state.details.details && state.details.details[id].parameters;
 export const getWorkflowRetentionRules = (id) => (state) =>
   id in state.details.details && state.details.details[id].retentionRules;
-export const getJobLogs = (id, step) => (state) =>
+export const getJobLogs = (id) => (state) =>
   id in state.details.details && state.details.details[id].job_log;
